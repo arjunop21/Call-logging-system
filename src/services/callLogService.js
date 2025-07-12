@@ -7,9 +7,9 @@ const createCallLog = async (data) => {
   const session = await CallLog.startSession();
   try {
     session.startTransaction();
-    
+
     const callLog = await CallLog.create([data], { session });
-    
+
     // Update client interaction history
     await Client.findByIdAndUpdate(
       data.clientId,
@@ -24,7 +24,7 @@ const createCallLog = async (data) => {
       },
       { session }
     );
-    
+
     // Update officer interaction history
     await Officer.findByIdAndUpdate(
       data.officerId,
@@ -39,7 +39,7 @@ const createCallLog = async (data) => {
       },
       { session }
     );
-    
+
     await session.commitTransaction();
     return callLog[0];
   } catch (error) {
@@ -50,11 +50,27 @@ const createCallLog = async (data) => {
   }
 };
 
-const getCallLogsByOfficer = async (officerId) => {
-  return CallLog.find({ officerId })
-    .populate('clientId')
-    .sort({ timestamp: -1 })
-    .limit(1000); // Optimize query performance
+const getCallLogsByOfficer = async (officerId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  const [data, total] = await Promise.all([
+    CallLog.find({ officerId })
+      .populate('clientId')
+      .sort({ timestamp: -1 })
+      .skip(skip)
+      .limit(limit),
+
+    CallLog.countDocuments({ officerId }),
+  ]);
+
+  return {
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    data,
+  };
 };
+
 
 export default { createCallLog, getCallLogsByOfficer };

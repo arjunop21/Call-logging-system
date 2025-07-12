@@ -17,10 +17,18 @@ router.post('/', async (req, res, next) => {
 // GET /api/clients/:id - Get client by ID
 router.get('/:id', async (req, res, next) => {
   try {
-    const client = await clientService.getClientById(req.params.id);
-    if (!client) {
-      return res.status(404).json({ error: 'Client not found' });
-    }
+    const { page = 1, limit = 10 } = req.query;
+
+    const client = await clientService.getClientById(
+      req.params.id,
+      parseInt(page),
+      parseInt(limit)
+    );
+
+    // if (!client) {
+    //   return res.status(404).json({ error: 'Client not found' });
+    // }
+
     res.json(client);
   } catch (error) {
     next(error);

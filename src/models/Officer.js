@@ -18,7 +18,6 @@ const officerSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: 'CallLog',
     },
-    note: { type: String, maxlength: 500 },
     outcome: { type: String, maxlength: 100 },
     timestamp: { type: Date, default: Date.now },
   }],
